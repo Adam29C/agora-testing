@@ -330,7 +330,7 @@ const AudioCall = () => {
   navigator.mediaDevices
     .getUserMedia({ audio: true })
     .then((stream) => {
-      console.log("Microphone access granted.", stream);
+      // console.log("Microphone access granted.", stream);
       // Do something with the stream
     })
     .catch((error) => {
