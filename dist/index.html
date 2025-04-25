@@ -1,13 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React</title>
-    <script type="module" crossorigin src="/assets/index-1UyPWEAi.js"></script>
+    <script type="module" crossorigin src="/assets/index-D287U9o9.js"></script>
   </head>
   <body>
     <div id="root"></div>
   </body>
+
+  <div id="logContainer"></div>
+
+  <script>
+    // Function to display console logs on the page
+    function logToPage(message) {
+      var logContainer = document.getElementById("logContainer");
+      var newLog = document.createElement("div");
+      newLog.textContent = message;
+      logContainer.appendChild(newLog);
+    }
+
+    // Custom console log function to show messages on the page
+    console.log = function (message) {
+      logToPage(message); // Show log on page
+      // window.alert(message); // Optionally show it as an alert
+    };
+
+    // Example: Call log function
+    console.log("Hello, this is a console log displayed on the page!");
+  </script>
 </html>
