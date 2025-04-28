@@ -7,13 +7,16 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "HTTPS=true SSL_CRT_FILE='/TESTING/cert.pem'  SSL_KEY_FILE='/TESTING/key.pem' react-scripts start"
   },
   "dependencies": {
     "agora-rtc-sdk-ng": "^4.23.2",
+    "axios": "^1.9.0",
+    "bootstrap": "^5.3.5",
     "react": "^19.1.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.5.1"
+    "react-router-dom": "^7.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",

@@ -1,232 +1,173 @@
-// import React, { useState, useEffect, useRef } from "react";
-// import AgoraRTC from "agora-rtc-sdk-ng";
+import React, { useState, useEffect, useRef } from "react";
+import AgoraRTC from "agora-rtc-sdk-ng";
+import { useLocation } from "react-router";
+import { FOR_POST_REQUEST } from "./api.service";
 
-// const AudioCall = () => {
-//   const [joined, setJoined] = useState(false);
-//   const [remoteUsers, setRemoteUsers] = useState([]);
-//   const [callDuration, setCallDuration] = useState(0);
-//   const [callStartTime, setCallStartTime] = useState(null);
-//   const [isMuted, setIsMuted] = useState(false);
+const AudioCall = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const channel = queryParams.get("chanel");
+  const username = queryParams.get("username");
+  const callId = queryParams.get("callId");
 
-//   const localAudioTrackRef = useRef(null);
-//   const clientRef = useRef(null);
+  const [joined, setJoined] = useState(false);
+  const [remoteUsers, setRemoteUsers] = useState([]);
+  const [callDuration, setCallDuration] = useState(0);
+  const [callStartTime, setCallStartTime] = useState(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [userDisconnect, setUserDisconnect] = useState(false);
 
-//   const appId = "740baf604340463486afea8a267cc8e8"; // Replace with your Agora App ID
-//   const channel = "audio-channel"; // Replace with your desired channel name
-//   const token = null; // Replace with your token if needed
+  const localAudioTrackRef = useRef(null);
+  const clientRef = useRef(null);
 
-//   async function joinAgoraChannel() {
-//     const client = AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+  const appId = "740baf604340463486afea8a267cc8e8";
+  const token = null;
 
-//     await client.join(appId, channel, null, null);
+  const joinAgoraChannel = async () => {
+    clientRef.current = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
+    clientRef.current.on("user-published", handleUserPublished);
+    clientRef.current.on("user-left", handleUserLeft);
 
-//     const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-//     await client.publish([localAudioTrack]);
+    await clientRef.current.join(appId, channel, token, null);
 
-//     console.log("Joined and published mic successfully");
-//   }
+    const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack({
+      encoderConfig: {
+        bitrate: 128,
+        sampleRate: 48000,
+        stereo: true,
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
 
-//   const handleJoinCall = async () => {
-//     try {
-//       await navigator.mediaDevices.getUserMedia({ audio: true });
-//       console.log("Mic access granted");
-//       joinAgoraChannel(); // Call your agora join logic here
-//     } catch (err) {
-//       alert(
-//         "Microphone access failed. Please check permissions or close other apps using the mic."
-//       );
-//       console.error("Mic permission error:", err);
-//     }
+    localAudioTrackRef.current = localAudioTrack;
+    await clientRef.current.publish([localAudioTrack]);
+    setJoined(true);
+    setCallStartTime(new Date());
+  };
 
-//     if (joined) {
-//       console.log("Already joined the call.");
-//       return;
-//     }
+  const handleJoinCall = async () => {
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      await joinAgoraChannel();
+      await FOR_POST_REQUEST("call/accept", { callId });
+    } catch (err) {
+      console.error("Error joining call:", err);
+    }
+  };
 
-//     try {
-//       // Create Agora client
-//       clientRef.current = AgoraRTC.createClient({ mode: "rtc", codec: "h264" });
+  const handleUserPublished = async (user, mediaType) => {
+    if (mediaType === "audio") {
+      await clientRef.current.subscribe(user, "audio");
+      user.audioTrack.play();
+      setRemoteUsers((prev) => (prev.some((u) => u.uid === user.uid) ? prev : [...prev, user]));
+    }
+  };
 
-//       // Add listeners
-//       clientRef.current.on("user-published", handleUserPublished);
-//       clientRef.current.on("user-left", handleUserLeft);
-//       clientRef.current.on("network-quality", handleNetworkQuality);
+  const handleUserLeft = async (user) => {
+    setUserDisconnect(true);
+    if (user.audioTrack) {
+      user.audioTrack.stop();
+      user.audioTrack.close();
+    }
+    await clientRef.current.unsubscribe(user, "audio");
+    setRemoteUsers((prev) => prev.filter((u) => u.uid !== user.uid));
+    await FOR_POST_REQUEST("call/end", { callId });
+  };
 
-//       // Join channel
-//       await clientRef.current.join(appId, channel, token, null);
+  const handleMuteUnmute = async () => {
+    if (localAudioTrackRef.current) {
+      await localAudioTrackRef.current.setEnabled(isMuted);
+      setIsMuted(!isMuted);
+    }
+  };
 
-//       // ✅ Check mic access before creating track
-//       // await navigator.mediaDevices.getUserMedia({ audio: true });
+  const handleLeaveCall = async () => {
+    if (localAudioTrackRef.current) {
+      localAudioTrackRef.current.stop();
+      localAudioTrackRef.current.close();
+    }
+    if (clientRef.current) {
+      await clientRef.current.leave();
+    }
+    await FOR_POST_REQUEST("call/end", { callId });
+    window.location.href = "myapp://endcall";
+  };
 
-//       // Create audio track
-//       const localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-//       localAudioTrackRef.current = localAudioTrack;
+  useEffect(() => {
+    let timer;
+    if (callStartTime) {
+      timer = setInterval(() => {
+        setCallDuration(Math.floor((new Date() - callStartTime) / 1000));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [callStartTime]);
 
-//       // Publish local audio
-//       await clientRef.current.publish([localAudioTrack]);
+  useEffect(() => {
+    if (userDisconnect) {
+      window.location.href = "myapp://endcall";
+    }
+  }, [userDisconnect]);
 
-//       setJoined(true);
-//       setCallStartTime(new Date());
-//     } catch (error) {
-//       console.error("Error joining the channel:", error);
-//       alert(
-//         "Microphone access failed. Please check your permissions or close other apps using the mic."
-//       );
-//     }
-//   };
+  useEffect(() => {
+    return () => {
+      if (clientRef.current) {
+        clientRef.current.off("user-published", handleUserPublished);
+        clientRef.current.off("user-left", handleUserLeft);
+      }
+    };
+  }, []);
 
-//   const handleUserPublished = async (user, mediaType) => {
-//     if (mediaType === "audio") {
-//       await clientRef.current.subscribe(user, "audio");
-//       user.audioTrack.play();
+  const formatDuration = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  };
 
-//       setRemoteUsers((prevUsers) => {
-//         const exists = prevUsers.some((u) => u.uid === user.uid);
-//         return exists ? prevUsers : [...prevUsers, user];
-//       });
-//     }
-//   };
-
-//   const handleUserLeft = (user) => {
-//     setRemoteUsers((prevUsers) => prevUsers.filter((u) => u.uid !== user.uid));
-//   };
-
-//   const handleNetworkQuality = (stats) => {
-//     console.log("Network Quality:", stats);
-//   };
-
-//   const handleMuteUnmute = async () => {
-//     if (localAudioTrackRef.current) {
-//       if (isMuted) {
-//         await localAudioTrackRef.current.setEnabled(true); // Unmute
-//       } else {
-//         await localAudioTrackRef.current.setEnabled(false); // Mute
-//       }
-//       setIsMuted(!isMuted);
-//     }
-//   };
-
-//   navigator.mediaDevices.enumerateDevices().then((devices) => {
-//     console.log(
-//       "testing audio devices",
-//       devices.filter((d) => d.kind === "audioinput")
-//     );
-//   });
-
-//   const handleLeaveCall = async () => {
-//     if (localAudioTrackRef.current) {
-//       localAudioTrackRef.current.stop();
-//       localAudioTrackRef.current.close();
-//     }
-
-//     if (clientRef.current) {
-//       await clientRef.current.leave();
-//     }
-
-//     setRemoteUsers([]);
-//     setJoined(false);
-//     setCallDuration(0);
-//     setCallStartTime(null);
-//     setIsMuted(false);
-//   };
-
-//   useEffect(() => {
-//     let timer;
-//     if (callStartTime) {
-//       timer = setInterval(() => {
-//         setCallDuration(Math.floor((new Date() - callStartTime) / 1000));
-//       }, 1000);
-//     }
-
-//     return () => clearInterval(timer);
-//   }, [callStartTime]);
-
-//   useEffect(() => {
-//     // Clean up event listeners on unmount
-//     return () => {
-//       if (clientRef.current) {
-//         clientRef.current.off("user-published", handleUserPublished);
-//         clientRef.current.off("user-left", handleUserLeft);
-//         clientRef.current.off("network-quality", handleNetworkQuality);
-//       }
-//     };
-//   }, []);
-
-//   const formatDuration = (seconds) => {
-//     const mins = Math.floor(seconds / 60);
-//     const secs = seconds % 60;
-//     return `${mins}m ${secs}s`;
-//   };
-
-//   const clicbtn = (seconds) => {
-//     document.body.contentEditable = "true"; // Make the page editable
-//     document.designMode = "on"; // Enable design mode for editing
-//     alert("Inspect mode activated. You can now edit the page.");
-//   };
-
-//   return (
-//     <div className="bg-gray-100 p-4 rounded-lg shadow-lg w-[500px] mx-auto mt-10">
-//       <h1 className="text-xl font-bold mb-4">Agora Audio Call</h1>
-
-//       <div className="mb-4">
-//         {joined ? (
-//           <p className="text-green-600">You're in the call!</p>
-//         ) : (
-//           <button
-//             onClick={handleJoinCall}
-//             className="bg-blue-500 text-white px-4 py-2 rounded"
-//           >
-//             Join Call
-//           </button>
-//         )}
-//       </div>
-
-//       <div className="mb-4">
-//         <h3 className="font-semibold">Remote Users</h3>
-//         {remoteUsers.length > 0 ? (
-//           remoteUsers.map((user) => (
-//             <div key={user.uid}>
-//               <p>Remote user {user.uid}</p>
-//             </div>
-//           ))
-//         ) : (
-//           <p>No remote users yet.</p>
-//         )}
-//       </div>
-
-//       {joined && (
-//         <div className="space-y-2">
-//           <p>Call Duration: {formatDuration(callDuration)}</p>
-//           <button
-//             onClick={handleMuteUnmute}
-//             className="bg-yellow-500 text-white px-4 py-2 rounded"
-//           >
-//             {isMuted ? "Unmute" : "Mute"}
-//           </button>
-//           <button
-//             onClick={handleLeaveCall}
-//             className="bg-red-500 text-white px-4 py-2 rounded"
-//           >
-//             End Call
-//           </button>
-//         </div>
-//       )}
-
-//       <button onClick={clicbtn}>click</button>
-//     </div>
-//   );
-// };
-
-// export default AudioCall;
-
-
-
-import React from 'react'
-
-const App = () => {
   return (
-    <div>App</div>
-  )
-}
+    <>
+      <div className="header">
+        <img
+          src="https://rich143.com/images/newfavicon.svg"
+          className="profile-img"
+          alt="Profile"
+        />
+        <div>
+          <div className="username">{username}</div>
+          <div className="status">Online</div>
+        </div>
+      </div>
+      <div className="logo">
+        <img
+          src="https://rich143.com/static/media/updatedlogo.778bb66b8ac72949874f0c8180098037.svg"
+          className="img-fluid w-75"
+          alt="Logo"
+        />
+      </div>
+      <div className="timer mt-5 text-bold username h1">
+        {formatDuration(callDuration)}
+      </div>
+      <div className="login-btn">
+        {joined ? (
+          <button
+            className="btn btn-danger btn-sm w-100 rounded-4 py-3"
+            onClick={handleLeaveCall}
+          >
+            End Call
+          </button>
+        ) : (
+          <button
+            className="btn btn-success btn-sm w-100 py-3 rounded-3"
+            onClick={handleJoinCall}
+          >
+            Join Call
+          </button>
+        )}
+      </div>
+    </>
+  );
+};
 
-export default App
+export default AudioCall;

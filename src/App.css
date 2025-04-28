@@ -1,4 +1,4 @@
-#root {
+/* #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
@@ -39,4 +39,53 @@
 
 .read-the-docs {
   color: #888;
+} */
+
+body {
+  background: linear-gradient(to bottom, #a0d7db, white);
+  height: 100vh;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+}
+.header {
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  background-color: transparent;
+}
+.profile-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+}
+.username {
+  font-weight: bold;
+  font-size: 18px;
+}
+.status {
+  font-size: 14px;
+  color: green;
+}
+.logo {
+  margin-top: 220px;
+  text-align: center;
+}
+.logo h1 {
+  font-size: 32px;
+  font-weight: bold;
+  color: #006666;
+}
+.timer {
+  text-align: center;
+  font-size: 24px;
+  margin-top: 10px;
+}
+.login-btn {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
 }
