@@ -61,7 +61,9 @@ const AudioCall = () => {
     if (mediaType === "audio") {
       await clientRef.current.subscribe(user, "audio");
       user.audioTrack.play();
-      setRemoteUsers((prev) => (prev.some((u) => u.uid === user.uid) ? prev : [...prev, user]));
+      setRemoteUsers((prev) =>
+        prev.some((u) => u.uid === user.uid) ? prev : [...prev, user]
+      );
     }
   };
 
@@ -107,7 +109,9 @@ const AudioCall = () => {
 
   useEffect(() => {
     if (userDisconnect) {
-      window.location.href = "myapp://endcall";
+      if (window.confirm("Do you want to end the call?")) {
+        window.location.href = "myapp://endcall";
+      }
     }
   }, [userDisconnect]);
 
