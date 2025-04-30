@@ -69,7 +69,7 @@ body {
   color: green;
 }
 .logo {
-  margin-top: 220px;
+  margin-top: 150px;
   text-align: center;
 }
 .logo h1 {
@@ -88,4 +88,67 @@ body {
   left: 50%;
   transform: translateX(-50%);
   width: 80%;
+}
+
+
+.call-button {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  font-size: 24px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.margin-buttons{
+margin-top: 195px;
+}
+
+
+.call-button:hover {
+  transform: scale(1.1);
+}
+
+/* Pulse animation */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(0, 255, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 0, 0);
+  }
+}
+
+
+.red-pulse {
+  animation: redPulse 1.5s infinite;
+}
+
+@keyframes redPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(255, 0, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+
+
+
+@keyframes shake {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3px, 0); }
+  40% { transform: translate(3px, 0); }
+  60% { transform: translate(-3px, 0); }
+  80% { transform: translate(3px, 0); }
+  100% { transform: translate(0, 0); }
+}
+
+.call-button.shake {
+  animation: shake 0.5s infinite;
 }

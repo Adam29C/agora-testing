@@ -9,6 +9,10 @@ const AudioCall = () => {
   const channel = queryParams.get("chanel");
   const username = queryParams.get("username");
   const callId = queryParams.get("callId");
+  const userType = queryParams.get("userType");
+
+  const callType = queryParams.get("callType");
+  const notificationId = queryParams.get("notificationId");
 
   const [joined, setJoined] = useState(false);
   const [remoteUsers, setRemoteUsers] = useState([]);
@@ -107,13 +111,28 @@ const AudioCall = () => {
     return () => clearInterval(timer);
   }, [callStartTime]);
 
+  // useEffect(() => {
+  //   if (userDisconnect) {
+  //     if (window.confirm("Do you want to end the call?")) {
+  //       window.location.href = "myapp://endcall";
+  //     }
+  //   }
+  // }, [userDisconnect]);
+
   useEffect(() => {
-    if (userDisconnect) {
-      if (window.confirm("Do you want to end the call?")) {
-        window.location.href = "myapp://endcall";
-      }
-    }
+    if (!userDisconnect) return;
+
+    // const confirmEndCall = window.confirm("Do you want to end the call?");
+    // if (confirmEndCall) {
+    window.location.href = "myapp://endcall";
+    // FOR_POST_REQUEST("call/end", { callId });
+
+    // }
   }, [userDisconnect]);
+
+  useEffect(() => {
+    if (callType === "caller") handleJoinCall();
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -139,7 +158,9 @@ const AudioCall = () => {
           alt="Profile"
         />
         <div>
-          <div className="username">{username}</div>
+          <div className="username">
+            {username} , notificationId- {notificationId} 
+          </div>
           <div className="status">Online</div>
         </div>
       </div>
@@ -150,10 +171,10 @@ const AudioCall = () => {
           alt="Logo"
         />
       </div>
-      <div className="timer mt-5 text-bold username h1">
+      <div className="timer my-5 text-bold username h1">
         {formatDuration(callDuration)}
       </div>
-      <div className="login-btn">
+      {/* <div className="login-btn">
         {joined ? (
           <button
             className="btn btn-danger btn-sm w-100 rounded-4 py-3"
@@ -169,6 +190,23 @@ const AudioCall = () => {
             Join Call
           </button>
         )}
+      </div> */}
+
+      <div className="d-flex justify-content-center gap-5  margin-buttons">
+        {callType === "receiver" && (
+          <button
+            onClick={handleJoinCall}
+            className="btn btn-success d-flex align-items-center justify-content-center call-button red-pulse  mx-5"
+          >
+            <i className="fas fa-phone"></i>
+          </button>
+        )}
+        <button
+          onClick={handleLeaveCall}
+          className="btn btn-danger d-flex align-items-center justify-content-center call-button  mx-5"
+        >
+          <i className="fas fa-phone-slash"></i>
+        </button>
       </div>
     </>
   );
