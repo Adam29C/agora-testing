@@ -27,7 +27,7 @@ import fs from 'fs'
 export default defineConfig({
 server: {
 host: '0.0.0.0', // All interfaces
-port: 5173,
+port: 9977,
 allowedHosts: [
 'callit.minidog.club', // Add your domain here
 ],
