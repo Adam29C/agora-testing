@@ -159,7 +159,7 @@ const AudioCall = () => {
         />
         <div>
           <div className="username">
-            {username} , notificationId- {notificationId} 
+            {username} , notificationId- {notificationId}
           </div>
           <div className="status">Online</div>
         </div>
@@ -193,7 +193,7 @@ const AudioCall = () => {
       </div> */}
 
       <div className="d-flex justify-content-center gap-5  margin-buttons">
-        {callType === "receiver" && (
+        {callType !== "caller" && (
           <button
             onClick={handleJoinCall}
             className="btn btn-success d-flex align-items-center justify-content-center call-button red-pulse  mx-5"
