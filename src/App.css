@@ -152,3 +152,12 @@ margin-top: 195px;
 .call-button.shake {
   animation: shake 0.5s infinite;
 }
+
+
+
+.font-size{
+  font-size: 14px;
+  font-weight: 900;
+  margin: 0 27px;
+}
+
