@@ -266,9 +266,7 @@ const AudioCall = () => {
         />
         <div>
           <div className="username">{username}</div>
-          <div className="status">
-            callType-{callType} , &nbsp; fakecalltype - {ddddd}
-          </div>
+          <div className="status">Online</div>
         </div>
       </div>
       <div className="logo">
@@ -282,24 +280,28 @@ const AudioCall = () => {
         {formatDuration(callDuration)}
       </div>
 
-      <span className="text-center d-flex justify-content-center">
-        If the receiver doesn't pick up, the call will auto-end after 10
-        seconds.
-      </span>
+      {callType === "receiver" && (
+        <span className="text-center d-flex justify-content-center font-size">
+          If the receiver doesn't pick up, the call will auto-end after 10
+          seconds.
+        </span>
+      )}
       <div className="d-flex justify-content-center gap-5 margin-buttons">
-        <button
-          onClick={handleJoinCall}
-          className="btn btn-success d-flex align-items-center justify-content-center call-button red-pulse mx-5"
-        >
-          <i className="fas fa-phone"></i>
-        </button>
-
-        <button
-          onClick={handleLeaveCall}
-          className={` btn btn-danger d-flex align-items-center justify-content-center call-button mx-5`}
-        >
-          <i className="fas fa-phone-slash"></i>
-        </button>
+        {!joined ? (
+          <button
+            onClick={handleJoinCall}
+            className="btn btn-success d-flex align-items-center justify-content-center call-button red-pulse mx-5"
+          >
+            <i className="fas fa-phone"></i>
+          </button>
+        ) : (
+          <button
+            onClick={handleLeaveCall}
+            className={` btn btn-danger d-flex align-items-center justify-content-center call-button mx-5`}
+          >
+            <i className="fas fa-phone-slash"></i>
+          </button>
+        )}
       </div>
     </>
   );
