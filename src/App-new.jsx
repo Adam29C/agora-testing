@@ -41,8 +41,7 @@ const AudioCall = () => {
     }
     // if (callType === "receiver") {
     //   window.ReactNativeWebView?.postMessage(
-    //     JSON.stringify({ type: "TOGGLE_RINGTONEOF" })  
-    
+    //     JSON.stringify({ type: "TOGGLE_RINGTONEOF" })
     //   );
     // }
 
@@ -65,10 +64,10 @@ const AudioCall = () => {
         encoderConfig: {
           bitrate: 128,
           sampleRate: 48000,
-          stereo: false,
+          stereo: true,
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: false,
+          autoGainControl: true,
         },
       });
       localAudioTrackRef.current = localAudioTrack;
@@ -211,10 +210,10 @@ const AudioCall = () => {
             encoderConfig: {
               bitrate: 128,
               sampleRate: 48000,
-              stereo: false,
+              stereo: true,
               echoCancellation: true,
               noiseSuppression: true,
-              autoGainControl: false,
+              autoGainControl: true,
             },
           });
 
@@ -312,16 +311,16 @@ const AudioCall = () => {
   }, []);
 
   // ----- mute & unmute -----------
-  // const handleMuteUnmute = async () => {
-  //   if (localAudioTrackRef.current) {
-  //     if (isMuted) {
-  //       await localAudioTrackRef.current.setEnabled(true); // Unmute
-  //     } else {
-  //       await localAudioTrackRef.current.setEnabled(false); // Mute
-  //     }
-  //     setIsMuted(!isMuted);
-  //   }
-  // };
+  const handleMuteUnmute = async () => {
+    if (localAudioTrackRef.current) {
+      if (isMuted) {
+        await localAudioTrackRef.current.setEnabled(true); // Unmute
+      } else {
+        await localAudioTrackRef.current.setEnabled(false); // Mute
+      }
+      setIsMuted(!isMuted);
+    }
+  };
 
   // ---------  loude and spicker -----------------
 
@@ -422,7 +421,7 @@ const AudioCall = () => {
         </div>
 
         <div class="control-buttons">
-          {/* {isMuted ? (
+          {isMuted ? (
             <button className={`btn btn-dark `} onClick={handleMuteUnmute}>
               <i class="fa-solid fa-microphone-slash "></i>
             </button>
@@ -430,7 +429,7 @@ const AudioCall = () => {
             <button className={`btn btn-dark `} onClick={handleMuteUnmute}>
               <i class="fa-solid fa-microphone"></i>
             </button>
-          )} */}
+          )}
           {/* <div
             className={`btn btn-dark `}
             onClick={() => {
