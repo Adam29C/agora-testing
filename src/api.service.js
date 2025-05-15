@@ -1,7 +1,9 @@
 
 import axios from "axios";
 
-const base_url = "https://zuba.minidog.club/";
+// const base_url = "https://zuba.minidog.club/";
+const base_url = "https://rchat.bhau777.com/";
+
 
 // GET Request
 export const FOR_GET_LIST = async (URL) => {
